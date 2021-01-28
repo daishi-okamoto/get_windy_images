@@ -4,10 +4,58 @@ from selenium import webdriver
 # import chromedriver_binary
 import boto3
 import config
-import os
+import time
+
+
+class ChromeDriver():
+    """
+    ChromeDriver Class
+    """
+    def __init__(self):
+        pass
+
+    def open(self, lambda_flg: bool):
+        """
+        Open Chrome driver
+        """
+        # Chromeオプションを設定する
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-gpu")
+        # options.add_argument("--window-size=1000x1000")
+        options.add_argument("--window-size=1704x1078")
+        options.add_argument("--disable-application-cache")
+        options.add_argument("--disable-infobars")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--hide-scrollbars")
+        options.add_argument("--enable-logging")
+        options.add_argument("--log-level=0")
+        options.add_argument("--v=99")
+        options.add_argument("--single-process")
+        options.add_argument("--ignore-certificate-errors")
+
+        if lambda_flg:
+            # chrome driverを読み込む
+            options.binary_location = "/opt/headless-chromium"
+            driver = webdriver.Chrome("/opt/chromedriver", options=options)
+        else:
+            driver = webdriver.Chrome(options=options)
+
+        self.driver = driver
+
+    def close(self):
+        """
+        Close Chrome driver
+        """
+        self.driver.close()
 
 
 class Windy():
+    """
+    Windy Class
+    """
     def __init__(
         self,
         area: str,
@@ -42,18 +90,18 @@ class Windy():
         self.hh = "{:02}".format(date.hour)
 
         url_date = date - timedelta(hours=9)
-        self.url_yyyy = url_date.year
+        self.url_yyyy = str(url_date.year)
         self.url_mm = "{:02}".format(url_date.month)
         self.url_dd = "{:02}".format(url_date.day)
         self.url_hh = "{:02}".format(url_date.hour)
 
-    def save_images(self, lambda_flg: bool, options=None):
+    def save_images(self, chrome, options=None):
         """
         画像データの保存
         """
         # URLをフォーマット
         format_url = self.url.format(
-            yyyy=str(self.url_yyyy),
+            yyyy=self.url_yyyy,
             mm=self.url_mm,
             dd=self.url_dd,
             hh=self.url_hh,
@@ -63,41 +111,13 @@ class Windy():
             zoom=self.zoom
         )
 
-        # Chromeオプションを設定する
-        options = webdriver.ChromeOptions()
-        options.binary_location = "/opt/headless-chromium"
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-gpu")
-        # options.add_argument("--window-size=1000x1000")
-        options.add_argument("--window-size=1704x1078")
-        options.add_argument("--disable-application-cache")
-        options.add_argument("--disable-infobars")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--hide-scrollbars")
-        options.add_argument("--enable-logging")
-        options.add_argument("--log-level=0")
-        options.add_argument("--v=99")
-        options.add_argument("--single-process")
-        options.add_argument("--ignore-certificate-errors")
-
-        if lambda_flg:
-            # chrome driverを読み込む
-            driver = webdriver.Chrome("/opt/chromedriver", options=options)
-        else:
-            driver = webdriver.Chrome(options=options)
-
         # Chromeでフォーマット済みURLを開く(headless)
-        driver.get(format_url)
+        chrome.driver.get(format_url)
 
-        # driver.implicitly_wait(3)
+        time.sleep(5)
         # Chromeで開いたページのスクリーンショットをtmpディレクトリに保存する
-        driver.save_screenshot(
+        chrome.driver.save_screenshot(
             f"{config.TMP_DIR}/{self.filename}")
-
-        # コネクション切断
-        driver.close()
 
     def create_filename(self):
         """
@@ -146,6 +166,10 @@ def main(lambda_flg=False):
     """
     メイン処理
     """
+    # ChromeDriver接続
+    chrome = ChromeDriver()
+    chrome.open(lambda_flg)
+
     for area in config.WINDY_AREAS:
         if area["enable"] is False:
             continue
@@ -162,9 +186,11 @@ def main(lambda_flg=False):
             windy.set_date(date)
             windy.create_filename()
 
-            windy.save_images(lambda_flg)
+            windy.save_images(chrome)
 
             windy.upload_s3(ACL="public-read")
+
+    chrome.close()
 
 
 def get_date(UTC=False) -> datetime:
