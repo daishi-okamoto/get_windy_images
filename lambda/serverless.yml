@@ -1,0 +1,27 @@
+service: getWindyImages
+
+provider:
+  name: aws
+  runtime: python3.7
+  memorySize: 2048
+  timeout: 900
+  stage: dev
+  region: ap-northeast-1
+  role:
+  ignore: ["/.*\\.pyc$", "__pycache__"]
+  environment:
+    SELENIUM_LAYER_SERVICE: selenium-layer
+
+functions:
+  chrome:
+    handler: get_windy.lambda_handler
+    description: Get Windy Images
+    environment:
+      TZ: Asia/Tokyo
+      STAGE: dev
+    # package:
+    #   include:
+    #     - ".fonts/**"
+    layers:
+      - ${cf:${self:provider.environment.SELENIUM_LAYER_SERVICE}-${opt:stage, self:provider.stage}.SeleniumLayerExport}
+      - ${cf:${self:provider.environment.SELENIUM_LAYER_SERVICE}-${opt:stage, self:provider.stage}.ChromedriverLayerExport}
