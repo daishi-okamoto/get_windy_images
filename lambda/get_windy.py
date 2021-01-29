@@ -124,7 +124,7 @@ class Windy():
         保存用のファイル名文字列生成
         """
         self.filename = f"windy_{self.overlay}_{self.area}_{self.yyyy}"\
-            f"{self.mm}{self.dd}{self.hh}_{self.zoom}.png"
+            f"{self.mm}{self.dd}{self.hh}.png"
 
     # def resize_image(self):
         #
