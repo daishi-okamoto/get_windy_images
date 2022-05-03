@@ -59,8 +59,8 @@ WINDY_AREAS = [
     },
     {
         "area": "Kyusyu",
-        "lat": 32.389,
-        "lon": 131.067,
+        "lat": 32.863,
+        "lon": 133.369,
         "zoom": 8,
         "enable": True,
     },
