@@ -8,6 +8,8 @@ Overlay
 -------
 wind: 風
 clouds: 雲量
+hclouds: 上層雲
+mclouds: 中層雲
 lclouds: 下層雲
 temp: 気温
 pressure: 気圧
@@ -18,7 +20,7 @@ thunder: 雷雨
 snowAccu: 新雪
 waves: 波
 """
-WINDY_OVERLAY = ["clouds", "temp", "rh"]
+WINDY_OVERLAY = ["clouds", "hclouds", "mclouds", "lclouds", "temp", "rh", "wind", "rain", "fog"]
 WINDY_AREAS = [
     {
         "area": "Hokkaido-1",
@@ -60,9 +62,13 @@ WINDY_AREAS = [
         "lat": 32.389,
         "lon": 131.067,
         "zoom": 8,
-        "enable": False,
+        "enable": True,
     },
 ]
 
 # TMP FILE
 TMP_DIR = "/tmp"
+
+# AUTH
+WINDY_MAIL = ""
+WINDY_PW = ""

@@ -77,7 +77,7 @@ class Windy():
         self.latitude = latitude
         self.longitude = longitude
         self.zoom = zoom
-        self.url = "https://www.windy.com/?{yyyy}-{mm}-{dd}-{hh},{overlay},{lat},{lon},{zoom},p:off"
+        self.url = "https://www.windy.com/login?{yyyy}-{mm}-{dd}-{hh},{overlay},{lat},{lon},{zoom},p:off"
         # self.url = "https://www.windy.com/ja/?{yyyy}-{mm}-{dd}-{hh},{overlay},{lat},{lon},{zoom},p:off"
 
     def set_date(self, date: datetime):
@@ -115,6 +115,21 @@ class Windy():
         chrome.driver.get(format_url)
 
         time.sleep(5)
+
+        # ログイン処理
+        mail_form = chrome.driver.find_element_by_id('email')
+        pw_form = chrome.driver.find_element_by_id('password')
+
+        mail_form.clear()
+        pw_form.clear()
+        mail_form.send_keys(config.WINDY_MAIL)
+        pw_form.send_keys(config.WINDY_PW)
+
+        login_submit_btn = chrome.driver.find_element_by_id('submitLogin')
+        login_submit_btn.click()
+
+        time.sleep(5)
+
         # Chromeで開いたページのスクリーンショットをtmpディレクトリに保存する
         chrome.driver.save_screenshot(
             f"{config.TMP_DIR}/{self.filename}")
